@@ -24,8 +24,8 @@ const connectDB = async () => {
       await mongoose.connect(memoryUri);
       console.log(`[JanSeva DB] Connected successfully to in-memory MongoDB at: ${memoryUri}`);
     } catch (mmsErr) {
-      console.error('[JanSeva DB] Failed to start in-memory MongoDB:', mmsErr.message);
-      throw mmsErr;
+      console.warn('[JanSeva DB] Could not start local in-memory Mongo:', mmsErr.message);
+      console.log('[JanSeva DB] Continuing with Supabase PostgreSQL cloud database!');
     }
   }
 
