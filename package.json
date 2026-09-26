@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "JanSeva – Smart Citizen Complaint Management System",
   "scripts": {
+    "build": "cd frontend && npm install && npm run build",
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
     "seed": "cd backend && npm run seed",
