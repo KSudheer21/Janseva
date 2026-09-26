@@ -4,6 +4,27 @@
 
 ---
 
+## 🌐 Live Deployments & Demo Credentials
+
+| Service | Platform | Live URL |
+|---|---|---|
+| **Frontend Web App** | Vercel | [**https://janseva-web-one.vercel.app**](https://janseva-web-one.vercel.app) |
+| **Backend REST API** | Render | [**https://janseva-api.onrender.com**](https://janseva-api.onrender.com) |
+| **Cloud Database & Storage** | Supabase | `https://eoqresrefkxmbrzzrjea.supabase.co` |
+| **GitHub Repository** | GitHub | [**https://github.com/KSudheer21/Janseva**](https://github.com/KSudheer21/Janseva) |
+
+### 🔑 Demo Login Credentials
+
+* **Citizen Access**:
+  * Mobile Number: Any 10-digit number (e.g. `9876543210`)
+  * OTP: `123456`
+* **Municipal Officer Access**:
+  * Officer ID: `OFF001`
+  * Password: `1234`
+  * Designation: Senior Municipal Engineer (Sanitation & Civil Infrastructure)
+
+---
+
 ## 🏛️ Key Features
 
 ### 1. Two Completely Isolated User Roles
