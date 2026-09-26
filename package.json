@@ -1,0 +1,14 @@
+{
+  "name": "janseva-root",
+  "version": "1.0.0",
+  "description": "JanSeva – Smart Citizen Complaint Management System",
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "seed": "cd backend && npm run seed",
+    "test:e2e": "cd backend && node scripts/testE2E.js"
+  },
+  "keywords": ["civic", "complaints", "janseva", "governance"],
+  "author": "JanSeva Team",
+  "license": "ISC"
+}
