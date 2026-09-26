@@ -317,7 +317,7 @@ export default function OfficerComplaintDetailModal({ complaintId, onClose, onRe
                   )}
 
                   {/* START WORK button */}
-                  {complaint.status === 'ASSIGNED' && (
+                  {(complaint.status === 'SUBMITTED' || complaint.status === 'ASSIGNED') && (
                     <button
                       onClick={handleStartWork}
                       disabled={actionLoading}
@@ -342,7 +342,7 @@ export default function OfficerComplaintDetailModal({ complaintId, onClose, onRe
                   )}
 
                   {/* MARK COMPLETED button */}
-                  {(complaint.status === 'ASSIGNED' || complaint.status === 'IN PROGRESS') && (
+                  {complaint.status !== 'COMPLETED' && complaint.status !== 'REJECTED' && (
                     <button
                       onClick={() => setShowCompleteModal(true)}
                       disabled={actionLoading}
@@ -502,7 +502,27 @@ export default function OfficerComplaintDetailModal({ complaintId, onClose, onRe
                 />
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
+              <AlertTriangle size={32} style={{ margin: '0 auto 10px', display: 'block', color: '#f59e0b' }} />
+              <p style={{ fontWeight: '600' }}>Complaint data could not be loaded.</p>
+              <button
+                onClick={loadDetails}
+                style={{
+                  marginTop: '12px',
+                  padding: '8px 16px',
+                  backgroundColor: '#2563eb',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: '600'
+                }}
+              >
+                Retry
+              </button>
+            </div>
+          )}
         </div>
 
         {/* MODAL: MARK COMPLETED WITH PHOTO UPLOAD */}

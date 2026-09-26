@@ -377,11 +377,35 @@ export const api = {
 
   // 9. Get Single Complaint by ID
   async getMyComplaintById(id) {
-    const { data } = await supabase
-      .from('complaints')
-      .select('*')
-      .or(`complaint_id.eq.${id},id.eq.${id}`)
-      .single();
+    if (!isCloudFallback()) {
+      try {
+        const res = await fetch(`${API_BASE}/complaints/my/${id}`, {
+          method: 'GET',
+          headers: getHeaders()
+        });
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json();
+          if (data.success && data.complaint) return data;
+        }
+      } catch (err) {
+        console.warn('[API my complaint by id fallback to Supabase]', err);
+      }
+    }
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    let query = supabase.from('complaints').select('*');
+    if (isUuid) {
+      query = query.or(`complaint_id.eq.${id},id.eq.${id}`);
+    } else {
+      query = query.eq('complaint_id', id);
+    }
+    const { data, error } = await query.maybeSingle();
+
+    if (error) {
+      console.error('getMyComplaintById error:', error);
+      throw new Error(error.message);
+    }
 
     return {
       success: true,
@@ -486,11 +510,35 @@ export const api = {
 
   // 12. Officer Get Complaint By ID
   async getOfficerComplaintById(id) {
-    const { data } = await supabase
-      .from('complaints')
-      .select('*')
-      .or(`complaint_id.eq.${id},id.eq.${id}`)
-      .single();
+    if (!isCloudFallback()) {
+      try {
+        const res = await fetch(`${API_BASE}/complaints/officer/${id}`, {
+          method: 'GET',
+          headers: getHeaders()
+        });
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json();
+          if (data.success && data.complaint) return data;
+        }
+      } catch (err) {
+        console.warn('[API officer complaint by id fallback to Supabase]', err);
+      }
+    }
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    let query = supabase.from('complaints').select('*');
+    if (isUuid) {
+      query = query.or(`complaint_id.eq.${id},id.eq.${id}`);
+    } else {
+      query = query.eq('complaint_id', id);
+    }
+    const { data, error } = await query.maybeSingle();
+
+    if (error) {
+      console.error('getOfficerComplaintById error:', error);
+      throw new Error(error.message);
+    }
 
     return {
       success: true,
@@ -500,15 +548,30 @@ export const api = {
 
   // 13. Assign Complaint
   async assignComplaint(id) {
+    if (!isCloudFallback()) {
+      try {
+        const res = await fetch(`${API_BASE}/complaints/officer/${id}/assign`, {
+          method: 'PATCH',
+          headers: getHeaders()
+        });
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json();
+          if (data.success && data.complaint) return data;
+        }
+      } catch (err) {
+        console.warn('[API assign complaint fallback to Supabase]', err);
+      }
+    }
+
     const user = getCurrentUser();
     const officerName = user?.name || 'Sri Rajesh Sharma';
     const officerCode = user?.officerId || 'OFF001';
 
-    const { data: existing } = await supabase
-      .from('complaints')
-      .select('*')
-      .eq('complaint_id', id)
-      .single();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    let findQuery = supabase.from('complaints').select('*');
+    findQuery = isUuid ? findQuery.or(`complaint_id.eq.${id},id.eq.${id}`) : findQuery.eq('complaint_id', id);
+    const { data: existing } = await findQuery.maybeSingle();
 
     const timeline = existing?.timeline || [];
     timeline.push({
@@ -519,7 +582,7 @@ export const api = {
       performedBy: officerName
     });
 
-    const { data, error } = await supabase
+    let updateQuery = supabase
       .from('complaints')
       .update({
         status: 'ASSIGNED',
@@ -527,10 +590,9 @@ export const api = {
         assigned_officer_name: officerName,
         assigned_at: new Date().toISOString(),
         timeline
-      })
-      .eq('complaint_id', id)
-      .select()
-      .single();
+      });
+    updateQuery = isUuid ? updateQuery.eq('id', existing?.id || id) : updateQuery.eq('complaint_id', existing?.complaint_id || id);
+    const { data, error } = await updateQuery.select().single();
 
     if (error) throw new Error(error.message);
     return { success: true, complaint: normalizeComplaint(data) };
@@ -538,14 +600,30 @@ export const api = {
 
   // 14. Update Status (In Progress / Rejected)
   async updateComplaintStatus(id, { status, note, rejectionReason }) {
+    if (!isCloudFallback()) {
+      try {
+        const res = await fetch(`${API_BASE}/complaints/officer/${id}/status`, {
+          method: 'PATCH',
+          headers: getHeaders(),
+          body: JSON.stringify({ status, note, rejectionReason })
+        });
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json();
+          if (data.success && data.complaint) return data;
+        }
+      } catch (err) {
+        console.warn('[API update status fallback to Supabase]', err);
+      }
+    }
+
     const user = getCurrentUser();
     const officerName = user?.name || 'Officer';
 
-    const { data: existing } = await supabase
-      .from('complaints')
-      .select('*')
-      .eq('complaint_id', id)
-      .single();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    let findQuery = supabase.from('complaints').select('*');
+    findQuery = isUuid ? findQuery.or(`complaint_id.eq.${id},id.eq.${id}`) : findQuery.eq('complaint_id', id);
+    const { data: existing } = await findQuery.maybeSingle();
 
     const timeline = existing?.timeline || [];
     timeline.push({
@@ -567,12 +645,9 @@ export const api = {
       updatePayload.rejection_reason = rejectionReason || note || '';
     }
 
-    const { data, error } = await supabase
-      .from('complaints')
-      .update(updatePayload)
-      .eq('complaint_id', id)
-      .select()
-      .single();
+    let updateQuery = supabase.from('complaints').update(updatePayload);
+    updateQuery = isUuid ? updateQuery.eq('id', existing?.id || id) : updateQuery.eq('complaint_id', existing?.complaint_id || id);
+    const { data, error } = await updateQuery.select().single();
 
     if (error) throw new Error(error.message);
     return { success: true, complaint: normalizeComplaint(data) };
@@ -580,6 +655,23 @@ export const api = {
 
   // 15. Complete Complaint with Proof
   async completeComplaint(id, formData) {
+    if (!isCloudFallback()) {
+      try {
+        const res = await fetch(`${API_BASE}/complaints/officer/${id}/complete`, {
+          method: 'PATCH',
+          headers: getHeaders(true),
+          body: formData
+        });
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json();
+          if (data.success && data.complaint) return data;
+        }
+      } catch (err) {
+        console.warn('[API complete fallback to Supabase]', err);
+      }
+    }
+
     const user = getCurrentUser();
     const officerName = user?.name || 'Officer';
     const resolutionNote = formData.get('resolutionNote') || 'Issue resolved and verified.';
@@ -591,11 +683,10 @@ export const api = {
       completionPhotoUrl = await uploadImageToSupabase(photoFile || photoDataUrl, 'resolution');
     }
 
-    const { data: existing } = await supabase
-      .from('complaints')
-      .select('*')
-      .eq('complaint_id', id)
-      .single();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    let findQuery = supabase.from('complaints').select('*');
+    findQuery = isUuid ? findQuery.or(`complaint_id.eq.${id},id.eq.${id}`) : findQuery.eq('complaint_id', id);
+    const { data: existing } = await findQuery.maybeSingle();
 
     const timeline = existing?.timeline || [];
     timeline.push({
@@ -606,7 +697,7 @@ export const api = {
       performedBy: officerName
     });
 
-    const { data, error } = await supabase
+    let updateQuery = supabase
       .from('complaints')
       .update({
         status: 'COMPLETED',
@@ -614,10 +705,9 @@ export const api = {
         completion_photo_url: completionPhotoUrl,
         resolution_note: resolutionNote,
         timeline
-      })
-      .eq('complaint_id', id)
-      .select()
-      .single();
+      });
+    updateQuery = isUuid ? updateQuery.eq('id', existing?.id || id) : updateQuery.eq('complaint_id', existing?.complaint_id || id);
+    const { data, error } = await updateQuery.select().single();
 
     if (error) throw new Error(error.message);
     return { success: true, complaint: normalizeComplaint(data) };
